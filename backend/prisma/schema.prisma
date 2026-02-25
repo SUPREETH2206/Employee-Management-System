@@ -1,0 +1,83 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id         String   @id @default(uuid())
+  name       String
+  email      String   @unique
+  password   String
+  role       String   @default("EMPLOYEE") // HR or EMPLOYEE
+  avatar     String?
+  phone      String?
+  gender     String?  // Male, Female, Other
+  street     String?
+  city       String?
+  district   String?
+  town       String?
+  state      String?
+  country    String?  @default("India")
+  position   String?
+  department String?
+  tasks      Task[]
+  leaves     Leave[]
+  accessLogs AccessLog[]
+  meetings   Meeting[] @relation("HostedMeetings")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model Task {
+  id          String   @id @default(uuid())
+  title       String
+  description String
+  assignedBy  String
+  dueDate     DateTime
+  status      String   @default("To Do") // To Do, In Progress, Completed
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Leave {
+  id           String   @id @default(uuid())
+  type         String   // Paid Leave, Unpaid Leave, Sick Leave
+  startDate    DateTime
+  endDate      DateTime
+  durationDays Float    @default(0)
+  reason       String
+  status       String   @default("Pending") // Approved, Pending, Declined
+  userId       String
+  user         User     @relation(fields: [userId], references: [id])
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model AccessLog {
+  id         String   @id @default(uuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id])
+  loginTime  DateTime @default(now())
+  logoutTime DateTime?
+}
+
+model Meeting {
+  id            String   @id @default(uuid())
+  title         String
+  link          String
+  scheduledTime DateTime
+  participants  String?  // comma separated emails
+  hostId        String
+  host          User     @relation("HostedMeetings", fields: [hostId], references: [id])
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
